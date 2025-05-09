@@ -1,1 +1,6 @@
 catboost_info/
+venv/
+__pycache__/
+.env.development
+sample.db
+.vscode/*

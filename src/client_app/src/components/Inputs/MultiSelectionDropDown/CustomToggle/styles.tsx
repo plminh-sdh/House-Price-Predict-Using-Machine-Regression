@@ -1,0 +1,29 @@
+import { styled } from "styled-components";
+
+type Props = {
+  $isInvalid: boolean;
+  $isDisabled: boolean;
+};
+export const Toggle = styled.div.attrs<{ $isInvalid: boolean }>(
+  ({ $isInvalid }) => ({
+    className: "form-select " + ($isInvalid ? "is-invalid" : ""),
+  })
+)<Props>`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+
+  user-select: none;
+  ${({ $isDisabled }) =>
+    $isDisabled &&
+    ` 
+      background-color: var(--tblr-bg-surface-secondary);
+      color: var(--tblr-secondary);
+      `};
+  transition: border-color 0.15s;
+  font-family: ${({ theme }) => theme.fontFamily.body};
+
+  &::after {
+    display: none;
+  }
+`;
