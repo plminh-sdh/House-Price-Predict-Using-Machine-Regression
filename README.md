@@ -48,7 +48,7 @@ Configure a `.env.development` file in the `src/app/` directory to configure the
 
 ### 4. Set Up Database
 
-Open SQL Server Management Studio (SSMS) or any SQL you have and create a database called `LoanChecker`
+Open SQL Server Management Studio (SSMS) or any SQL you have and create a database called `HousePricePrediction`
 
 ### 5. Run Alembic Migration
 
