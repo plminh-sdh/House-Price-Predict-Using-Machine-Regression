@@ -5,17 +5,22 @@ import {
   SectionTitleWrapper,
 } from './styles';
 import { FormProvider, useForm } from 'react-hook-form';
-import { PredictLoanModel } from '../../models/loan';
+import { PredictLoanModel } from '../../models/house-price';
 import { useCallback, useState } from 'react';
 import { CustomButton } from '@/components/common';
 import LabelledInputWrapper from '@/components/Inputs/LabelledInputWrapper';
 import {
-  DateInputRHF,
+  DropDownInputRHF,
   PositiveIntegerInputRHF,
+  RadioBooleanInputRHF,
 } from '@/components/Inputs/InputsWithRHF';
 import DefinedErrorMessage from '@/constants/message';
 import { predictLoan } from '../../services/predictor.service';
 import { PredictResult } from '../../models/predict-result';
+import { FirePlaceOptions } from '../../enums/fire-place-options';
+import { OverallQualityOptions } from '../../enums/overall-quality-options';
+import { GarageFinishOptions } from '../../enums/garage-finish-options';
+import { ExteriorQualityOptions } from '../../enums/exterior-quality-options';
 
 function Tool() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -43,7 +48,7 @@ function Tool() {
   return (
     <Container fluid className="p-0 mb-5">
       <PageTitleWrapper className="py-2 px-3 my-3">
-        Loan Default Predictor Tool
+        House Price Predictor Tool
       </PageTitleWrapper>
       <Row>
         <Col className="col-6">
@@ -52,140 +57,137 @@ function Tool() {
           </SectionTitleWrapper>
           <Row className="ms-5 mb-3">
             <PredictResultWrapper>
-              <b>Default Probability:</b> {predictResult?.defaultRate}
-            </PredictResultWrapper>{' '}
-          </Row>
-          <Row className="ms-5">
-            <PredictResultWrapper>
-              <b>Key Factors:</b>
-              <ul>
-                {predictResult?.topFeatures.map((feature) => (
-                  <li key={feature.name}>
-                    {feature.name} : {feature.value}
-                  </li>
-                ))}
-              </ul>
+              <b>Predicted House Price:</b> $
+              {predictResult?.housePrice.toFixed(2)}
             </PredictResultWrapper>{' '}
           </Row>
         </Col>
         <Col className="col-6">
           <SectionTitleWrapper className="py-2 px-3 my-3">
-            Loan Details
+            House Details
           </SectionTitleWrapper>
           <FormProvider {...predictLoanModel}>
             <Form onSubmit={handleSubmit(onSubmit)}>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="intRate"
-                  label="Interest Rate"
+                  name="grLivArea"
+                  label="Above grade (ground) living area square feet"
                   hasAsterisk
                 >
                   <PositiveIntegerInputRHF
-                    name="intRate"
-                    rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
-                  />
-                </LabelledInputWrapper>
-              </Row>
-              <Row className="mb-3">
-                <LabelledInputWrapper name="dti" label="DTI" hasAsterisk>
-                  <PositiveIntegerInputRHF
-                    name="dti"
+                    name="grLivArea"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="revolBal"
-                  label="Total Credit Revolving Balance"
+                  name="overallQual"
+                  label="Overall quality of the house"
+                  hasAsterisk
+                >
+                  <DropDownInputRHF
+                    name="overallQual"
+                    rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
+                    options={OverallQualityOptions}
+                  />
+                </LabelledInputWrapper>
+              </Row>
+              <Row className="mb-3">
+                <LabelledInputWrapper
+                  name="totalBsmtSF"
+                  label="Total square feet of basement area"
                   hasAsterisk
                 >
                   <PositiveIntegerInputRHF
-                    name="revolBal"
+                    name="totalBsmtSF"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="revolUtil"
-                  label="Revolving Line Utilization Rate"
+                  name="garageCars"
+                  label="Size of garage in car capacity"
                   hasAsterisk
                 >
                   <PositiveIntegerInputRHF
-                    name="revolUtil"
+                    name="garageCars"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="earliestCrLine"
-                  label="Earliest Credit Line Open Day"
+                  name="yearBuilt"
+                  label="Original construction date"
                   hasAsterisk
                 >
-                  <DateInputRHF
-                    name="earliestCrLine"
+                  <PositiveIntegerInputRHF
+                    name="yearBuilt"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="annualInc"
-                  label="Annual Income"
+                  name="fireplaceQu"
+                  label="Fireplace quality"
+                  hasAsterisk
+                >
+                  <DropDownInputRHF
+                    name="fireplaceQu"
+                    rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
+                    options={FirePlaceOptions}
+                  />
+                </LabelledInputWrapper>
+              </Row>
+              <Row className="mb-3">
+                <LabelledInputWrapper
+                  name="yearRemodAdd"
+                  label="Remodel year (same as construction year if no remodeling or additions)"
                   hasAsterisk
                 >
                   <PositiveIntegerInputRHF
-                    name="annualInc"
+                    name="yearRemodAdd"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="moSinOldIlAcct"
-                  label="Months since oldest bank installment account opened"
+                  name="garageFinish"
+                  label="Interior finish of the garage"
                   hasAsterisk
                 >
-                  <PositiveIntegerInputRHF
-                    name="moSinOldIlAcct"
+                  <DropDownInputRHF
+                    name="garageFinish"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
+                    options={GarageFinishOptions}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="loanAmnt"
-                  label="Loan Amount"
+                  name="exterQual"
+                  label="Exterior quality"
                   hasAsterisk
                 >
-                  <PositiveIntegerInputRHF
-                    name="loanAmnt"
+                  <DropDownInputRHF
+                    name="exterQual"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
+                    options={ExteriorQualityOptions}
                   />
                 </LabelledInputWrapper>
               </Row>
               <Row className="mb-3">
                 <LabelledInputWrapper
-                  name="openAcc"
-                  label="Number of open credit lines"
+                  name="centralAir"
+                  label="Has central air conditioning"
                   hasAsterisk
                 >
-                  <PositiveIntegerInputRHF
-                    name="openAcc"
-                    rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
-                  />
-                </LabelledInputWrapper>
-              </Row>
-              <Row className="mb-3">
-                <LabelledInputWrapper
-                  name="ficoScore"
-                  label="Fico Scores"
-                  hasAsterisk
-                >
-                  <PositiveIntegerInputRHF
-                    name="ficoScore"
+                  <RadioBooleanInputRHF
+                    name="centralAir"
                     rules={{ required: DefinedErrorMessage.REQUIRED_MESSAGE }}
                   />
                 </LabelledInputWrapper>

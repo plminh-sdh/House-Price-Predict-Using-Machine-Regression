@@ -1,5 +1,5 @@
 import env from "@env";
-import { PredictLoanModel } from "../models/loan";
+import { PredictLoanModel } from "../models/house-price";
 import { handleResponse } from "@/helpers/handle-response";
 import { PredictResult } from "../models/predict-result";
 

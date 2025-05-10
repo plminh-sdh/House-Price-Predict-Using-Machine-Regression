@@ -3,62 +3,33 @@ import pandas as pd
 import shap
 from joblib import load
 from datetime import datetime, timezone
-from models.predictor import PredictLoanModel, FeatureValueViewModel, PredictResult
+from models.predictor import PredictHousePriceModel, PredictResult
 
-def predict(data: PredictLoanModel):
-    # Load the trained Random Forest model
-    earliest_datetime = datetime.combine(data.earliestCrLine, datetime.min.time(), tzinfo=timezone.utc)
-    days_since_earliest = (datetime.now(timezone.utc) - earliest_datetime).days
-    years_since_earliest = round(days_since_earliest / 365, 2)
+def predict(data: PredictHousePriceModel):
+    model = load('resources/voting_regressor.joblib')
+
+    x_train = pd.read_csv("resources/X_train_medians.csv")
+    feature_defaults = x_train.median()
     
-    model = load('resources/random_forest_model.joblib')
-    full_feature_names = model.feature_names_in_
-
-    # Define sample values for the corrected top 10 features
     input_values = {
-        'int_rate': data.intRate,
-        'dti': data.dti,
-        'revol_bal': data.revolBal,
-        'revol_util': data.revolUtil,
-        'earliest_cr_line': years_since_earliest,  # years since first credit line
-        'annual_inc': data.annualInc,
-        'mo_sin_old_il_acct': data.moSinOldIlAcct,
-        'loan_amnt': data.loanAmnt,
-        'open_acc': data.openAcc,
-        'fico_score': data.ficoScore
+        'GrLivArea': data.grLivArea,       
+        'OverallQual': data.overallQual,       
+        'TotalBsmtSF': data.totalBsmtSF,      
+        'GarageCars': data.garageCars,        
+        'YearBuilt': data.yearBuilt,       
+        'FireplaceQu': data.fireplaceQu,         
+        'YearRemodAdd': data.yearRemodAdd,    
+        'GarageFinish': data.garageFinish,        
+        'ExterQual': data.exterQual,          
+        'CentralAir_Y': 1 if data.centralAir else 0,   
     }
 
-    # Initialize a test row with zeros for all features
-    test_row = pd.DataFrame([np.zeros(len(full_feature_names))], columns=full_feature_names)
+    test_row = pd.DataFrame([feature_defaults.copy()])
 
-    # Fill in the top 10 features with example values
     for feature, value in input_values.items():
         if feature in test_row.columns:
-            test_row[feature] = value
+            test_row.at[0, feature] = value
 
-    # Make prediction
-    prediction = model.predict(test_row)
-    probability = model.predict_proba(test_row)
-    status = "Charged Off" if prediction[0] == 1 else "Fully Paid"
-
-    # SHAP explanation
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(test_row)
-
-    # Extract SHAP values for class 1 (Charged Off)
-    contributions = pd.DataFrame({
-        'feature': full_feature_names,
-        'shap_value': shap_values[0][:, 1],
-        'abs_shap': np.abs(shap_values[0][:, 1]),
-        'value': test_row.iloc[0].values
-    })
-
-    # Show top 5 most influential features
-    top_5 = contributions.sort_values(by='abs_shap', ascending=False).head(5)
+    predicted_price = model.predict(test_row)[0]
     
-    top_features = [
-        FeatureValueViewModel(name=row["feature"], value=str(round(row["value"], 2)))
-        for _, row in top_5.iterrows()
-    ]
-    
-    return PredictResult(defaultRate=round(float(probability[0][1]), 4), topFeatures=top_features)
+    return PredictResult(housePrice=predicted_price)

@@ -29,7 +29,7 @@ function Layout({ children }: Props) {
           bg="primary"
           className="py-3 d-flex align-items-center justify-content-space-between px-3"
         >
-          <h1 className="text-white m-0 text-center">Loan Default Predictor</h1>
+          <h1 className="text-white m-0 text-center">House Price Predictor</h1>
 
           <Dropdown className="ms-auto d-flex align-items-center">
             <Dropdown.Toggle as={NavMenuToggle} />
